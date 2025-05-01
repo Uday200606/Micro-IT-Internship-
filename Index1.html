@@ -1,81 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Tic Tac Toe</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
-      margin-top: 50px;
+      margin-top: 40px;
     }
-    h1 {
-      margin-bottom: 20px;
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
     }
-    #board {
-      display: grid;
-      grid-template-columns: repeat(3, 100px);
-      grid-gap: 5px;
-      justify-content: center;
-    }
-    .cell {
-      width: 100px;
-      height: 100px;
-      background: #eee;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 36px;
+    td {
+      width: 60px;
+      height: 60px;
+      font-size: 2em;
+      text-align: center;
+      border: 2px solid #000;
       cursor: pointer;
     }
-    .cell:hover {
-      background: #ddd;
+    td:hover {
+      background-color: #f0f0f0;
     }
     #message {
       margin-top: 20px;
-      font-size: 20px;
+      font-size: 1.2em;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 1em;
     }
   </style>
 </head>
 <body>
 
-  <h1>Tic Tac Toe</h1>
-  <div id="board"></div>
-  <div id="message"></div>
+<h2>Tic Tac Toe</h2>
+<table id="board">
+  <tr>
+    <td data-row="0" data-col="0"></td>
+    <td data-row="0" data-col="1"></td>
+    <td data-row="0" data-col="2"></td>
+  </tr>
+  <tr>
+    <td data-row="1" data-col="0"></td>
+    <td data-row="1" data-col="1"></td>
+    <td data-row="1" data-col="2"></td>
+  </tr>
+  <tr>
+    <td data-row="2" data-col="0"></td>
+    <td data-row="2" data-col="1"></td>
+    <td data-row="2" data-col="2"></td>
+  </tr>
+</table>
 
-  <script>
-    const board = [
-      ["", "", ""],
-      ["", "", ""],
-      ["", "", ""]
-    ];
-    let currentPlayer = "X";
-    const boardDiv = document.getElementById("board");
-    const messageDiv = document.getElementById("message");
+<div id="message"></div>
+<button onclick="resetGame()">Restart Game</button>
 
-    function renderBoard() {
-      boardDiv.innerHTML = "";
-      for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-          const cell = document.createElement("div");
-          cell.className = "cell";
-          cell.textContent = board[i][j];
-          cell.addEventListener("click", () => handleMove(i, j));
-          boardDiv.appendChild(cell);
-        }
-      }
+<script>
+  let board = [
+    ["", "", ""],
+    ["", "", ""],
+    ["", "", ""]
+  ];
+  let currentPlayer = "X";
+  const cells = document.querySelectorAll("td");
+  const message = document.getElementById("message");
+
+  function checkWin(player) {
+    // Rows, columns, diagonals
+    for (let i = 0; i < 3; i++) {
+      if (board[i].every(cell => cell === player)) return true;
+      if (board.map(row => row[i]).every(cell => cell === player)) return true;
+    }
+    if ([0,1,2].every(i => board[i][i] === player)) return true;
+    if ([0,1,2].every(i => board[i][2 - i] === player)) return true;
+    return false;
+  }
+
+  function checkDraw() {
+    return board.flat().every(cell => cell === "X" || cell === "O");
+  }
+
+  function handleClick(e) {
+    const row = parseInt(e.target.dataset.row);
+    const col = parseInt(e.target.dataset.col);
+    if (board[row][col] !== "") return;
+
+    board[row][col] = currentPlayer;
+    e.target.textContent = currentPlayer;
+
+    if (checkWin(currentPlayer)) {
+      message.textContent = `Player ${currentPlayer} wins!`;
+      cells.forEach(cell => cell.removeEventListener("click", handleClick));
+      return;
     }
 
-    function handleMove(row, col) {
-      if (board[row][col] !== "" || checkWin("X") || checkWin("O")) {
-        return;
-      }
-      board[row][col] = currentPlayer;
-      renderBoard();
+    if (checkDraw()) {
+      message.textContent = "It's a draw!";
+      return;
+    }
 
-      if (checkWin(currentPlayer)) {
-        messageDiv.textContent = `Player ${currentPlayer} wins!`;
-      } else if (checkDraw()) {
-        messageDiv.textContent = "It's a draw!";
-      }
-    
+    currentPlayer = currentPlayer === "X" ? "O" : "X";
+    message.textContent = `Player ${currentPlayer}'s turn`;
+  }
+
+  function resetGame() {
+    board = [["", "", ""], ["", "", ""], ["", "", ""]];
+    cells.forEach(cell => {
+      cell.textContent = "";
+      cell.addEventListener("click", handleClick);
+    });
+    currentPlayer = "X";
+    message.textContent = "Player X's turn";
+  }
+
+  // Initial setup
+  cells.forEach(cell => cell.addEventListener("click", handleClick));
+  message.textContent = "Player X's turn";
+</script>
+
+</body>
+</html>
